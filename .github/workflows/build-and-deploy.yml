@@ -19,7 +19,8 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          # Vite requires Node >= 20.19. Use Node 20.x to satisfy requirement.
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -46,7 +47,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install dependencies
         run: npm ci
