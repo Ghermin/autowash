@@ -3,6 +3,8 @@ name: Build and Deploy on merged PR
 on:
   pull_request:
     types: [closed]
+  # Allow manual runs from the Actions UI for testing
+  workflow_dispatch: {}
 
 permissions:
   contents: write
