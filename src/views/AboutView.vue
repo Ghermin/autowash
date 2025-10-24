@@ -1,6 +1,6 @@
 <template>
   <div class="about">
-    <h1>This is an about page</h1>
+    <h1>Création de 2e page pour tester la navigation</h1>
   </div>
 </template>
 

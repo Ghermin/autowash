@@ -1,0 +1,139 @@
+# --------------------------------------------------
+# Highly optimized .htaccess for a Vue SPA (production)
+# Goals: enforce HTTPS, enable Brotli/Gzip, sensible caching for
+# versioned assets, short cache for index.html, and strict headers.
+# Keep SPA rewrite: non-file/directory requests serve /index.html
+# --------------------------------------------------
+
+RewriteEngine On
+
+# -------------------------------
+# 1) FORCE HTTPS (fast redirect) - keep simple and canonical
+# Run before rewrites so clients are redirected early
+# -------------------------------
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+
+# -------------------------------
+# 2) SPA fallback (Vue Router - History mode)
+# Only rewrite if request is not an existing file or directory
+# -------------------------------
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ /index.html [L]
+
+
+# -------------------------------
+# 3) Compression: Brotli (preferred) + Gzip
+# Ensure Vary header so caches know responses vary by encoding
+# -------------------------------
+<IfModule mod_brotli.c>
+  # Brotli for modern servers
+  AddOutputFilterByType BROTLI_COMPRESS text/html text/css text/javascript application/javascript application/json application/manifest+json image/svg+xml
+  Header append Vary Accept-Encoding
+</IfModule>
+
+<IfModule mod_deflate.c>
+  # Gzip fallback
+  AddOutputFilterByType DEFLATE text/html text/css text/xml text/plain text/javascript application/javascript application/json application/manifest+json image/svg+xml
+  Header append Vary Accept-Encoding
+</IfModule>
+
+
+# -------------------------------
+# 4) Remove ETag (let caches rely on Cache-Control/Expires)
+# -------------------------------
+FileETag None
+<IfModule mod_headers.c>
+  Header unset ETag
+</IfModule>
+
+
+# -------------------------------
+# 5) Caching / Expires
+# - Versioned assets (filename contains hash) should be cached for a long time
+# - index.html and manifests: no cache / revalidate to ensure updates roll out quickly
+# - Use both Expires and Cache-Control for broad client support
+# -------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  # Long cache for static assets (images, fonts, hashed js/css)
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png  "access plus 1 year"
+  ExpiresByType image/gif  "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/javascript "access plus 1 year"
+
+  ExpiresByType font/ttf "access plus 1 year"
+  ExpiresByType font/otf "access plus 1 year"
+  ExpiresByType application/font-woff "access plus 1 year"
+  ExpiresByType application/font-woff2 "access plus 1 year"
+  ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
+
+  # Short/no-cache for HTML and JSON (index.html + manifests)
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/json "access plus 0 seconds"
+  ExpiresByType application/manifest+json "access plus 0 seconds"
+  ExpiresByType text/xml "access plus 0 seconds"
+</IfModule>
+
+
+# -------------------------------
+# 6) CDN-friendly Cache-Control rules (immuatable for versioned files)
+# FilesMatch covers common static extensions. If you host on OVH CDN,
+# this tells it the files are immutable and safe to cache for a year.
+# -------------------------------
+<IfModule mod_headers.c>
+  <FilesMatch "\.(?:js|css|woff2?|ttf|otf|eot|svg|jpg|jpeg|png|gif|webp)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # Ensure index.html is never aggressively cached by browsers or CDN
+  <FilesMatch "index\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+</IfModule>
+
+
+# -------------------------------
+# 7) Security headers (applied always where supported)
+# Keep them strict but compatible with SPA (we preserve inline style support)
+# - HSTS applied only on HTTPS requests
+# -------------------------------
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-XSS-Protection "1; mode=block"
+
+  # Permissions-Policy (replace features you don't use) — example conservative baseline
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+  # Content-Security-Policy: tailored for this SPA. Keep 'unsafe-inline' for styles
+  # because some CSS-in-JS / inline critical CSS may be used. Avoid unsafe-eval if possible.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:"
+
+  # HSTS: enable on HTTPS only. Some hosts expose HTTPS=on env variable in .htaccess
+  Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" env=HTTPS
+</IfModule>
+
+
+# -------------------------------
+# 8) Misc optimizations
+# - Disable server signature in responses if allowed by host (may be ignored)
+# - Prevent TRACE (some hosts ignore this in .htaccess)
+# -------------------------------
+<IfModule mod_headers.c>
+  Header unset Server
+  Header always unset X-Powered-By
+</IfModule>
+
+# End of file
