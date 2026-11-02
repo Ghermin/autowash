@@ -4,6 +4,8 @@
 
 Application Windows qui analyse la sécurité et la santé du PC, explique chaque problème et propose de le corriger en un clic.
 
+**Site : [ghermin.github.io/autowash](https://ghermin.github.io/autowash/)** · [Télécharger la dernière version](https://github.com/Ghermin/autowash/releases/latest)
+
 | Catégorie | Ce qui est vérifié | Corrections proposées |
 |---|---|---|
 | **Malwares** | Antivirus actif et à jour, menaces détectées par Microsoft Defender, programmes lancés au démarrage (non signés, altérés, scripts cachés) | Supprimer les menaces, scan rapide / complet / hors ligne, analyser un fichier, retirer du démarrage (avec sauvegarde) |
