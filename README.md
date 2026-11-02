@@ -23,13 +23,13 @@ Autowash s'appuie uniquement sur les outils intégrés à Windows (Defender, Win
 
 ## Installation
 
-Le plus simple : télécharger le zip de la [dernière version](https://github.com/Ghermin/autowash/releases/latest), l'extraire et lancer `Autowash\Autowash.exe` (Windows 10/11 64 bits, sans Python).
+Le plus simple : télécharger `Autowash-Setup-x.y.z.exe` dans la [dernière version](https://github.com/Ghermin/autowash/releases/latest) et le lancer (Windows 10/11 64 bits, sans Python). Il installe Autowash pour l'utilisateur courant, sans droits administrateur, dans `%LOCALAPPDATA%\Programs\Autowash`, avec raccourcis Bureau et menu Démarrer ; désinstallation depuis *Paramètres › Applications installées*. Le zip de la release contient la même version, portable.
 
 ### Mise à jour automatique d'Autowash
 
 À chaque lancement, la version .exe vérifie s'il existe une nouvelle release sur GitHub. Si oui, elle la télécharge en arrière-plan, vérifie son empreinte SHA-256 publiée par GitHub, puis l'installe à la fermeture d'Autowash (ou tout de suite avec **Redémarrer maintenant**). La tâche quotidienne fait de même. En cas d'échec, l'ancienne version est remise en place. Journal : `%LOCALAPPDATA%\Autowash\update.log`. Disponible à partir de la version 1.0.1.
 
-Pour publier une nouvelle version (numéro, construction, zip, tag et release GitHub) :
+Pour publier une nouvelle version (numéro, construction, installeur, zip, tag et release GitHub ; nécessite [Inno Setup 6](https://jrsoftware.org/isinfo.php), `winget install JRSoftware.InnoSetup`) :
 
 ```bash
 powershell -ExecutionPolicy Bypass -File release.ps1 -Version 1.0.2 -Notes "Ce qui change."
@@ -94,6 +94,8 @@ python main.py --auto
 main.py                  point d'entrée
 build.ps1                construction et installation de la version .exe
 release.ps1              publication d'une nouvelle version sur GitHub
+installer/autowash.iss   installeur (Inno Setup)
+docs/                    site GitHub Pages
 tools/make_icon.py       génération de assets/autowash.ico
 autowash/
   gui.py                 interface (CustomTkinter)

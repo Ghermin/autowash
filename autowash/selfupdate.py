@@ -26,7 +26,7 @@ _ASSET = re.compile(r"^Autowash-[\d.]+-windows\.zip$")
 _HEADERS = {"User-Agent": "Autowash", "Accept": "application/vnd.github+json"}
 _CREATE_NEW_PROCESS_GROUP = 0x200
 
-_SCRIPT = r"""param([int]$WaitPid, [string]$Source, [string]$Target, [string]$Log, [switch]$Relaunch)
+_SCRIPT = r"""param([int]$WaitPid, [string]$Source, [string]$Target, [string]$Log, [string]$Version, [switch]$Relaunch)
 $ErrorActionPreference = 'Stop'
 function Write-Log($message) {
     $line = '{0}  {1}{2}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $message, [Environment]::NewLine
@@ -66,7 +66,12 @@ foreach ($item in $items) {
     Remove-Item -LiteralPath (Join-Path $Target "$item.old") -Recurse -Force -ErrorAction SilentlyContinue
 }
 Remove-Item -LiteralPath (Split-Path $Source) -Recurse -Force -ErrorAction SilentlyContinue
-Write-Log "Mise à jour installée dans $Target."
+# version affichée dans « Applications installées » quand Autowash vient de l'installeur
+$uninstall = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{60D96E95-B24B-4216-865B-C393C3CAA293}_is1'
+if (Test-Path $uninstall) {
+    Set-ItemProperty -Path $uninstall -Name DisplayVersion -Value $Version -ErrorAction SilentlyContinue
+}
+Write-Log "Mise à jour $Version installée dans $Target."
 if ($Relaunch) { Start-Process -FilePath $exe }
 """
 
@@ -159,7 +164,7 @@ def apply(staged: Path, relaunch: bool = False, wait_pid: int | None = None, tar
     script.write_text(_SCRIPT, encoding="utf-8-sig")  # BOM : PowerShell 5.1 lit sinon les accents en ANSI
     args = ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", str(script),
             "-WaitPid", str(wait_pid or os.getpid()), "-Source", str(staged), "-Target", str(target),
-            "-Log", str(data_dir() / "update.log")]
+            "-Log", str(data_dir() / "update.log"), "-Version", staged.parent.name]  # dossier préparé = n° de version
     if relaunch:
         args.append("-Relaunch")
     # cwd hors du dossier d'installation, sinon il ne pourrait pas être renommé

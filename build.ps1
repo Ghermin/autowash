@@ -21,8 +21,13 @@ if ($NoInstall) { return }
 
 if (Get-Process Autowash -ErrorAction SilentlyContinue) { throw "Fermez Autowash avant de le réinstaller." }
 $target = Join-Path $env:LOCALAPPDATA 'Programs\Autowash'
-if (Test-Path $target) { Remove-Item $target -Recurse -Force -ErrorAction Stop }
-Copy-Item dist\Autowash $target -Recurse -ErrorAction Stop
+# on remplace seulement l'application : le désinstalleur de l'installeur (unins000.*) reste en place
+New-Item -ItemType Directory -Force $target | Out-Null
+foreach ($item in 'Autowash.exe', '_internal') {
+    $path = Join-Path $target $item
+    if (Test-Path $path) { Remove-Item $path -Recurse -Force -ErrorAction Stop }
+    Copy-Item (Join-Path 'dist\Autowash' $item) $path -Recurse -ErrorAction Stop
+}
 
 $exe = Join-Path $target 'Autowash.exe'
 $shortcut = (New-Object -ComObject WScript.Shell).CreateShortcut((Join-Path ([Environment]::GetFolderPath('Desktop')) 'Autowash.lnk'))

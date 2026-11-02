@@ -214,13 +214,13 @@
     <div class="wrap">
       <div class="eyebrow">Installer</div>
       <h2>Prêt en une minute</h2>
-      <p class="section-lead">Pas d'installeur, pas de Python à installer : un dossier à extraire, c'est tout.</p>
+      <p class="section-lead">Un seul fichier à télécharger, rien d'autre à installer.</p>
       <div class="steps">
-        <div class="card"><h3>Télécharger</h3><p>Récupérez le zip de la <a class="download" href="https://github.com/Ghermin/autowash/releases/latest">dernière version</a> (environ 32 Mo).</p></div>
-        <div class="card"><h3>Extraire</h3><p>Extrayez-le où vous voulez, par exemple dans <code>%LOCALAPPDATA%\Programs</code>. Gardez le dossier <code>Autowash</code> complet.</p></div>
-        <div class="card"><h3>Lancer</h3><p>Ouvrez <code>Autowash.exe</code> et acceptez les droits administrateur, nécessaires pour la plupart des corrections.</p></div>
+        <div class="card"><h3>Télécharger</h3><p>Récupérez l'installeur <a class="download" href="https://github.com/Ghermin/autowash/releases/latest">Autowash-Setup.exe</a>.</p></div>
+        <div class="card"><h3>Installer</h3><p>Lancez-le : Autowash s'installe pour votre compte, avec ses raccourcis sur le Bureau et dans le menu Démarrer.</p></div>
+        <div class="card"><h3>Lancer</h3><p>Ouvrez Autowash et acceptez les droits administrateur, nécessaires pour la plupart des corrections.</p></div>
       </div>
-      <p class="note"><strong>Windows affiche « Windows a protégé votre ordinateur » ?</strong> C'est normal pour un logiciel non signé : cliquez sur <em>Informations complémentaires</em>, puis <em>Exécuter quand même</em>.</p>
+      <p class="note"><strong>Windows affiche « Windows a protégé votre ordinateur » ?</strong> C'est normal pour un logiciel non signé : cliquez sur <em>Informations complémentaires</em>, puis <em>Exécuter quand même</em>. Pour désinstaller : <em>Paramètres › Applications installées › Autowash</em>.</p>
       <div class="card" style="margin-top:16px"><h3><span class="dot"></span>Se met à jour tout seul</h3><p>Les nouvelles versions sont téléchargées en arrière-plan, vérifiées (empreinte SHA-256) puis installées à la fermeture d'Autowash.</p></div>
     </div>
   </section>
@@ -245,11 +245,12 @@
 </footer>
 
 <script>
-  // Lien direct vers le zip de la dernière version (sinon, la page des releases reste la cible)
+  // Lien direct vers l'installeur de la dernière version, ou son zip (sinon, la page des releases reste la cible)
   fetch("https://api.github.com/repos/Ghermin/autowash/releases/latest")
     .then(r => r.ok ? r.json() : Promise.reject(r.status))
     .then(release => {
-      const asset = release.assets.find(a => /^Autowash-[\d.]+-windows\.zip$/.test(a.name));
+      const asset = release.assets.find(a => /^Autowash-Setup-[\d.]+\.exe$/.test(a.name))
+                 || release.assets.find(a => /^Autowash-[\d.]+-windows\.zip$/.test(a.name));
       if (!asset) return;
       document.querySelectorAll("a.download").forEach(a => { a.href = asset.browser_download_url; });
       const size = Math.round(asset.size / 1048576);
