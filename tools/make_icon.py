@@ -1,4 +1,5 @@
-"""Génère assets/autowash.ico : goutte d'eau blanche sur fond bleu dégradé (16 à 256 px)."""
+"""Génère assets/autowash.ico (16 à 256 px) et assets/autowash.png (logo de l'interface et du README) :
+goutte d'eau blanche sur fond bleu dégradé."""
 from pathlib import Path
 
 from PIL import Image, ImageDraw
@@ -37,5 +38,7 @@ def draw() -> Image.Image:
 
 if __name__ == "__main__":
     OUT.parent.mkdir(exist_ok=True)
-    draw().resize((256, 256), Image.LANCZOS).save(OUT, sizes=[(s, s) for s in (16, 24, 32, 48, 64, 128, 256)])
+    logo = draw().resize((256, 256), Image.LANCZOS)
+    logo.save(OUT, sizes=[(s, s) for s in (16, 24, 32, 48, 64, 128, 256)])
+    logo.save(OUT.with_suffix(".png"))
     print(f"Icône : {OUT}")

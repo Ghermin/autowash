@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/autowash.png" alt="Logo Autowash" width="112"></p>
+
 # Autowash
 
 Application Windows qui analyse la sécurité et la santé du PC, explique chaque problème et propose de le corriger en un clic.
