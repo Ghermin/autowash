@@ -12,7 +12,7 @@ from typing import Callable
 
 import customtkinter as ctk
 
-from . import MODULES, journal, programs, restore
+from . import MODULES, __version__, journal, programs, restore, selfupdate
 from .models import Action, Finding, Severity, score
 from .system import human_size, is_admin, launch, relaunch_as_admin
 
@@ -53,6 +53,8 @@ class App(ctk.CTk):
         self._full_scan = False  # une analyse complète est en cours : son score sera enregistré
         self._queue: queue.Queue[Callable[[], None]] = queue.Queue()
         self._busy = 0
+        self._update: dict | None = None  # nouvelle version téléchargée, installée à la fermeture
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
 
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -86,15 +88,21 @@ class App(ctk.CTk):
         if self.admin:  # purge des points de restauration de plus de 7 jours
             self.after(2000, lambda: self.run_bg("Purge des anciens points de restauration…", restore.prune,
                                                  lambda *_: None))
+        if selfupdate.install_dir():
+            if previous := selfupdate.just_updated():
+                journal.record("Autowash", f"Mise à jour vers la version {__version__}", "Mise à jour automatique",
+                               True, f"Version précédente : {previous}.")
+            self.after(5000, self._check_update)
 
     # --- Mise en page ---------------------------------------------------------
 
     def _build_sidebar(self) -> None:
-        bar = ctk.CTkFrame(self, width=230, corner_radius=0)
+        bar = self.sidebar = ctk.CTkFrame(self, width=230, corner_radius=0)
         bar.grid(row=0, column=0, rowspan=2, sticky="nsw")
         bar.pack_propagate(False)
         ctk.CTkLabel(bar, text="Autowash", font=_font(24, True)).pack(padx=22, pady=(26, 0), anchor="w")
-        ctk.CTkLabel(bar, text="Sécurité et santé du PC", text_color=MUTED).pack(padx=22, pady=(0, 18), anchor="w")
+        ctk.CTkLabel(bar, text=f"Sécurité et santé du PC · v{__version__}",
+                     text_color=MUTED).pack(padx=22, pady=(0, 18), anchor="w")
         self.nav: dict[str, ctk.CTkButton] = {}
         entries = [("dashboard", "Tableau de bord")] + [(m.NAME, m.NAME) for m in MODULES] + [("history", "Historique")]
         for key, label in entries:
@@ -224,6 +232,46 @@ class App(ctk.CTk):
     def relaunch_admin(self) -> None:
         if relaunch_as_admin("--no-admin"):
             self.destroy()
+
+    # --- Mise à jour d'Autowash ---------------------------------------------------
+
+    def _check_update(self) -> None:
+        def worker() -> None:
+            try:
+                release = selfupdate.check_and_prepare()
+            except Exception as exc:  # hors ligne, GitHub indisponible… nouvel essai au prochain lancement
+                selfupdate.log(f"Recherche de mise à jour impossible ({exc})")
+                return
+            if release:
+                self.post(lambda: self._show_update(release))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _show_update(self, release: dict) -> None:
+        self._update = release
+        box = ctk.CTkFrame(self.sidebar, fg_color=("#dbeafe", "#1e3a5f"), corner_radius=8)
+        box.pack(side="bottom", fill="x", padx=12, pady=(0, 0))
+        ctk.CTkLabel(box, text=f"Version {release['version']} prête", font=_font(13, True),
+                     text_color=TEXT).pack(padx=12, pady=(10, 0), anchor="w")
+        ctk.CTkLabel(box, text="Installée à la fermeture d'Autowash.", text_color=MUTED, wraplength=180,
+                     justify="left").pack(padx=12, anchor="w")
+        ctk.CTkButton(box, text="Redémarrer maintenant", height=30,
+                      command=self._restart_for_update).pack(fill="x", padx=10, pady=10)
+
+    def _restart_for_update(self) -> None:
+        if self._busy and not messagebox.askyesno("Opération en cours", "Une opération est en cours et sera "
+                                                  "interrompue.\n\nRedémarrer quand même ?"):
+            return
+        selfupdate.apply(self._update["staged"], relaunch=True)
+        self.destroy()
+
+    def _on_close(self) -> None:
+        if self._update:
+            try:
+                selfupdate.apply(self._update["staged"])
+            except Exception as exc:
+                selfupdate.log(f"Installation de la mise à jour impossible ({exc})")
+        self.destroy()
 
     def _check_admin(self, what: str) -> bool:
         if self.admin:

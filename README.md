@@ -19,6 +19,20 @@ Autowash s'appuie uniquement sur les outils intégrés à Windows (Defender, Win
 
 ## Installation
 
+Le plus simple : télécharger le zip de la [dernière version](https://github.com/Ghermin/autowash/releases/latest), l'extraire et lancer `Autowash\Autowash.exe` (Windows 10/11 64 bits, sans Python).
+
+### Mise à jour automatique d'Autowash
+
+À chaque lancement, la version .exe vérifie s'il existe une nouvelle release sur GitHub. Si oui, elle la télécharge en arrière-plan, vérifie son empreinte SHA-256 publiée par GitHub, puis l'installe à la fermeture d'Autowash (ou tout de suite avec **Redémarrer maintenant**). La tâche quotidienne fait de même. En cas d'échec, l'ancienne version est remise en place. Journal : `%LOCALAPPDATA%\Autowash\update.log`. Disponible à partir de la version 1.0.1.
+
+Pour publier une nouvelle version (numéro, construction, zip, tag et release GitHub) :
+
+```bash
+powershell -ExecutionPolicy Bypass -File release.ps1 -Version 1.0.2 -Notes "Ce qui change."
+```
+
+### Depuis les sources
+
 Windows 10/11, Python 3.11+.
 
 ```bash
@@ -75,6 +89,7 @@ python main.py --auto
 ```
 main.py                  point d'entrée
 build.ps1                construction et installation de la version .exe
+release.ps1              publication d'une nouvelle version sur GitHub
 tools/make_icon.py       génération de assets/autowash.ico
 autowash/
   gui.py                 interface (CustomTkinter)
@@ -90,6 +105,7 @@ autowash/
   browsers.py            extensions, mots de passe enregistrés, caches
   journal.py             historique, annulation, historique du score
   restore.py             points de restauration (purge après 7 jours)
+  selfupdate.py          mise à jour d'Autowash depuis les releases GitHub
   models.py              Finding / Action / Severity, score
   ps.py, system.py       PowerShell, registre, corbeille, notifications, droits admin
 ```

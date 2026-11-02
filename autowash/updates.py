@@ -298,6 +298,15 @@ def run_scheduled() -> None:
             notify(f"Autowash : {len(critical)} problème(s) critique(s)",
                    "; ".join(f.title for f in critical[:3]) + ". Ouvrez Autowash pour les corriger.")
 
+        from . import selfupdate
+        try:
+            release = selfupdate.check_and_prepare()
+            if release:  # installée dès la fin de la tâche (reportée si l'interface est ouverte)
+                selfupdate.apply(release["staged"])
+                log(f"Autowash {release['version']} téléchargé : installation à la fin de la tâche.")
+        except Exception as exc:
+            log(f"Mise à jour d'Autowash impossible ({exc})")
+
 
 def _enable_schedule() -> str:
     exe, argv = app_command("--auto")
