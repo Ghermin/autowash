@@ -1,6 +1,7 @@
 """Mises à jour : Windows Update, logiciels (winget), redémarrage en attente, mise à jour automatique."""
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import subprocess
@@ -11,7 +12,8 @@ from typing import Callable
 from . import journal, ps, restore
 from .malware import update_signatures
 from .models import Action, Finding, Severity, run_checks
-from .system import CREATE_NO_WINDOW, HKLM, app_command, data_dir, human_size, notify, open_target, reg_exists
+from .system import (CREATE_NO_WINDOW, HKLM, app_command, data_dir, human_size, is_admin, notify, open_target,
+                     reg_exists)
 
 NAME = "Mises à jour"
 DESCRIPTION = "Correctifs Windows, logiciels obsolètes (navigateurs, runtimes…) et mise à jour automatique des urgences."
@@ -182,6 +184,31 @@ def _winget_upgrades() -> list[dict]:
             if not _PRERELEASE.search(r[3])]
 
 
+# Fausses mises à jour : le manifeste winget annonce un numéro différent de celui que l'installeur inscrit dans
+# Windows (ex. OpenJDK 17.0.21.1021 contre 17.0.21.21), si bien que winget la propose encore après l'installation.
+_PHANTOMS_LOCK = threading.Lock()
+
+
+def _phantoms() -> dict[str, str]:
+    """{ID winget : version annoncée à tort}, gardé jusqu'à ce que winget propose une autre version."""
+    path = data_dir() / "winget-phantoms.json"
+    try:
+        return json.loads(path.read_text("utf-8")) if path.exists() else {}
+    except ValueError:
+        return {}
+
+
+def _remember_phantom(pkg: dict) -> None:
+    with _PHANTOMS_LOCK:
+        phantoms = _phantoms()
+        phantoms[pkg["id"]] = pkg["available"]
+        (data_dir() / "winget-phantoms.json").write_text(json.dumps(phantoms, indent=2), "utf-8")
+
+
+def _is_phantom(pkg: dict, phantoms: dict[str, str]) -> bool:
+    return phantoms.get(pkg["id"]) == pkg["available"]
+
+
 def _is_urgent(pkg: dict) -> bool:
     return pkg["id"].lower().startswith(URGENT_PACKAGES)
 
@@ -192,17 +219,32 @@ def _winget_upgrade(pkg: dict) -> Callable[[], str]:
                             "--accept-package-agreements", timeout=1800)
         if code != 0:
             last = [line.strip() for line in out.splitlines() if line.strip()]
-            raise RuntimeError(f"{pkg['name']} : échec (code {code}). {last[-1] if last else ''}")
+            hint = ""
+            if "1603" in out and not is_admin():  # installeur MSI pour tout l'ordinateur lancé sans droits
+                hint = " Relancez Autowash en administrateur."
+            raise RuntimeError(f"{pkg['name']} : échec (code 0x{code & 0xFFFFFFFF:08X}). "
+                               f"{last[-1] if last else ''}{hint}")
+        if any(p["id"] == pkg["id"] and p["available"] == pkg["available"] for p in _winget_upgrades()):
+            _remember_phantom(pkg)
+            return (f"{pkg['name']} : la version {pkg['available']} est déjà installée, winget l'annonce à tort "
+                    "(numéro de version différent dans son catalogue). Ignorée jusqu'à la prochaine version.")
         return f"{pkg['name']} mis à jour en {pkg['available']}."
     return go
 
 
 def software() -> list[Finding]:
     """Logiciels installés"""
-    packages = _winget_upgrades()
-    if not packages:
-        return [Finding("Tous les logiciels sont à jour", Severity.OK)]
+    phantoms = _phantoms()
+    packages, ignored = [], []
+    for pkg in _winget_upgrades():
+        (ignored if _is_phantom(pkg, phantoms) else packages).append(pkg)
     findings = []
+    if ignored:
+        findings.append(Finding(f"{len(ignored)} fausse(s) mise(s) à jour ignorée(s)", Severity.OK,
+                                "Déjà installées, mais winget les annonce encore (numéro de version différent dans "
+                                "son catalogue) :\n" + "\n".join(f"{p['name']} {p['available']}" for p in ignored)))
+    if not packages:
+        return findings + [Finding("Tous les logiciels sont à jour", Severity.OK)]
     for pkg in packages:
         urgent = _is_urgent(pkg)
         detail = f"{pkg['version']} → {pkg['available']}"
@@ -244,7 +286,9 @@ def auto_update(log: Callable[[str], None] = print) -> None:
     except Exception as exc:
         log(f"Windows Update : recherche impossible ({exc})")
     try:
-        steps += [(p["name"], _winget_upgrade(p)) for p in _winget_upgrades() if _is_urgent(p)]
+        phantoms = _phantoms()
+        steps += [(p["name"], _winget_upgrade(p)) for p in _winget_upgrades()
+                  if _is_urgent(p) and not _is_phantom(p, phantoms)]
     except Exception as exc:
         log(f"winget : recherche impossible ({exc})")
     for label, step in steps:
