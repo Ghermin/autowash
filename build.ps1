@@ -14,7 +14,7 @@ Invoke-Step 'dépendances' { python -m pip install --quiet --no-warn-script-loca
 Invoke-Step 'icône' { python tools\make_icon.py }
 Invoke-Step 'PyInstaller' {
     python -m PyInstaller --noconfirm --clean --windowed --log-level WARN --name Autowash `
-        --icon assets\autowash.ico --add-data "assets\autowash.ico;assets" --collect-data customtkinter main.py
+        --icon assets\autowash.ico --add-data "assets;assets" --collect-data customtkinter main.py
 }
 "Construit : $PSScriptRoot\dist\Autowash\Autowash.exe"
 if ($NoInstall) { return }

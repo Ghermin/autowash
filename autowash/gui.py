@@ -11,12 +11,15 @@ from tkinter import messagebox, ttk
 from typing import Callable
 
 import customtkinter as ctk
+from PIL import Image
 
 from . import MODULES, __version__, journal, programs, restore, selfupdate
 from .models import Action, Finding, Severity, score
 from .system import human_size, is_admin, launch, relaunch_as_admin
 
-ICON = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent.parent)) / "assets" / "autowash.ico"
+ASSETS = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent.parent)) / "assets"
+ICON = ASSETS / "autowash.ico"
+LOGO = ASSETS / "autowash.png"
 
 ctk.set_appearance_mode("system")
 ctk.set_default_color_theme("blue")
@@ -100,7 +103,9 @@ class App(ctk.CTk):
         bar = self.sidebar = ctk.CTkFrame(self, width=230, corner_radius=0)
         bar.grid(row=0, column=0, rowspan=2, sticky="nsw")
         bar.pack_propagate(False)
-        ctk.CTkLabel(bar, text="Autowash", font=_font(24, True)).pack(padx=22, pady=(26, 0), anchor="w")
+        logo = ctk.CTkImage(Image.open(LOGO), size=(34, 34)) if LOGO.exists() else None
+        ctk.CTkLabel(bar, text="  Autowash" if logo else "Autowash", image=logo, compound="left",
+                     font=_font(24, True)).pack(padx=18, pady=(24, 0), anchor="w")
         ctk.CTkLabel(bar, text=f"Sécurité et santé du PC · v{__version__}",
                      text_color=MUTED).pack(padx=22, pady=(0, 18), anchor="w")
         self.nav: dict[str, ctk.CTkButton] = {}
