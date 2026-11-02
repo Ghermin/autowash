@@ -489,6 +489,7 @@ class ProgramsPage(CategoryPage):
         self.uninstall_button.pack(side="right")
 
         self._style()
+        ctk.AppearanceModeTracker.add(lambda _mode: self._style(), self)  # suit le thème clair/sombre de Windows
         self.tree = ttk.Treeview(box, columns=[c[0] for c in self.COLUMNS], show="headings", selectmode="none",
                                  style="Autowash.Treeview")
         for key, title, width in self.COLUMNS:
@@ -592,6 +593,8 @@ class DashboardPage(ctk.CTkFrame):
         ctk.CTkLabel(chart_box, text="Évolution du score", text_color=MUTED, font=_font(11)).pack(anchor="w")
         self.chart = tk.Canvas(chart_box, width=220, height=64, highlightthickness=0, bd=0)
         self.chart.pack()
+        self._draw_chart()
+        ctk.AppearanceModeTracker.add(lambda _mode: self._draw_chart(), self)  # suit le thème clair/sombre de Windows
         actions = ctk.CTkFrame(top, fg_color="transparent")
         actions.grid(row=0, column=3, rowspan=2, padx=20)
         ctk.CTkButton(actions, text="Tout corriger (recommandé)", width=230, height=38, font=_font(14, True),
