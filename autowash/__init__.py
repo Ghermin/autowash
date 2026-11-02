@@ -1,5 +1,5 @@
 """Autowash : analyse et nettoyage de sécurité pour Windows."""
-__version__ = "1.0.2"  # avant les imports : selfupdate le lit pendant l'initialisation du paquet
+__version__ = "1.0.3"  # avant les imports : selfupdate le lit pendant l'initialisation du paquet
 
 from . import browsers, cleanup, drivers, health, malware, optimize, programs, startup, updates, vulnerabilities
 
