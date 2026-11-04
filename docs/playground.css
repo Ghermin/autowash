@@ -21,6 +21,10 @@
       <a class="pg-strip__all" href="https://ghermin.github.io/">tous les projets <span aria-hidden="true">→</span></a>
     </div>
   </nav>
+
+  Signature discrète en bas de l'appli elle-même (pied de page) :
+
+  <a class="pg-sig" href="https://ghermin.github.io/">un projet du bored dev playground</a>
 */
 
 :root {
@@ -360,6 +364,20 @@
 .pg-foot a { color: inherit; }
 .pg-foot a:hover { color: var(--pg-text); }
 
+/* Signature discrète en bas des applis : lien vers le playground */
+
+.pg-sig {
+  display: inline-block;
+  font: 500 11px/1.5 var(--pg-mono);
+  letter-spacing: -0.01em;
+  color: var(--pg-muted);
+  opacity: .7;
+  text-decoration: none;
+  transition: opacity .2s, color .2s;
+}
+.pg-sig:hover { opacity: 1; color: var(--pg-text); }
+.pg-sig:focus-visible { opacity: 1; outline: 2px solid var(--pg-accent); outline-offset: 3px; border-radius: 4px; }
+
 @media (prefers-reduced-motion: reduce) {
-  .pg-strip a, .pg-strip__all span, .pg-btn { transition: none; }
+  .pg-strip a, .pg-strip__all span, .pg-btn, .pg-sig { transition: none; }
 }

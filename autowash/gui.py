@@ -20,6 +20,7 @@ from .system import human_size, is_admin, launch, relaunch_as_admin
 ASSETS = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent.parent)) / "assets"
 ICON = ASSETS / "autowash.ico"
 LOGO = ASSETS / "autowash.png"
+PLAYGROUND = "https://ghermin.github.io/"
 
 ctk.set_appearance_mode("system")
 ctk.set_default_color_theme("blue")
@@ -116,8 +117,16 @@ class App(ctk.CTk):
                                    command=lambda k=key: self.show(k))
             button.pack(fill="x", padx=12, pady=2)
             self.nav[key] = button
+        # Lien discret vers le playground, tout en bas. Ouvert via explorer : le navigateur
+        # ne démarre pas avec les droits administrateur d'Autowash.
+        sig = ctk.CTkLabel(bar, text="un projet du bored dev playground", text_color=MUTED,
+                           font=ctk.CTkFont(family="Consolas", size=10), cursor="hand2")
+        sig.pack(side="bottom", pady=(0, 14))
+        sig.bind("<Button-1>", lambda _e: launch("explorer", PLAYGROUND))
+        sig.bind("<Enter>", lambda _e: sig.configure(text_color=TEXT))
+        sig.bind("<Leave>", lambda _e: sig.configure(text_color=MUTED))
         ctk.CTkButton(bar, text="Analyse complète", height=42, font=_font(14, True),
-                      command=self.scan_all).pack(side="bottom", fill="x", padx=12, pady=20)
+                      command=self.scan_all).pack(side="bottom", fill="x", padx=12, pady=(20, 10))
 
     def _build_admin_banner(self) -> None:
         banner = ctk.CTkFrame(self.content, fg_color=("#fff4d6", "#3a2e10"), corner_radius=8)
