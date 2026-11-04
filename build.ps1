@@ -11,7 +11,6 @@ function Invoke-Step([string]$what, [scriptblock]$command) {
 }
 
 Invoke-Step 'dépendances' { python -m pip install --quiet --no-warn-script-location -r requirements.txt pyinstaller==6.22.3 pillow }
-Invoke-Step 'icône' { python tools\make_icon.py }
 Invoke-Step 'PyInstaller' {
     python -m PyInstaller --noconfirm --clean --windowed --log-level WARN --name Autowash `
         --icon assets\autowash.ico --add-data "assets;assets" --collect-data customtkinter main.py

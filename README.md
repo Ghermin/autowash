@@ -96,7 +96,6 @@ build.ps1                construction et installation de la version .exe
 release.ps1              publication d'une nouvelle version sur GitHub
 installer/autowash.iss   installeur (Inno Setup)
 docs/                    site GitHub Pages
-tools/make_icon.py       génération de assets/autowash.ico
 autowash/
   gui.py                 interface (CustomTkinter)
   malware.py             antivirus, menaces, entrées de démarrage suspectes
