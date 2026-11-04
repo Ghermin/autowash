@@ -28,6 +28,8 @@ OutputDir=..\dist
 OutputBaseFilename=Autowash-Setup-{#AppVersion}
 SetupIconFile=..\assets\autowash.ico
 UninstallDisplayIcon={app}\Autowash.exe
+; prévient l'Explorateur en fin d'installation : les raccourcis reprennent l'icône du nouvel exe
+ChangesAssociations=yes
 UninstallDisplayName=Autowash
 WizardStyle=modern
 Compression=lzma2/max

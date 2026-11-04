@@ -71,6 +71,23 @@ $uninstall = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{60D96E9
 if (Test-Path $uninstall) {
     Set-ItemProperty -Path $uninstall -Name DisplayVersion -Value $Version -ErrorAction SilentlyContinue
 }
+# Windows garde l'icône de l'exe en cache : sans ça, les raccourcis (menu Démarrer, bureau, barre des tâches)
+# montrent encore l'ancienne après une mise à jour qui la change.
+try {
+    Add-Type -Namespace Autowash -Name Shell -MemberDefinition '[DllImport("shell32.dll", CharSet = CharSet.Unicode)] public static extern void SHChangeNotify(int e, uint f, string a, IntPtr b);'
+    $links = @($exe,
+        (Join-Path ([Environment]::GetFolderPath('Programs')) 'Autowash.lnk'),
+        (Join-Path ([Environment]::GetFolderPath('DesktopDirectory')) 'Autowash.lnk'),
+        (Join-Path $env:APPDATA 'Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\Autowash.lnk'))
+    foreach ($link in $links) {
+        if (Test-Path -LiteralPath $link) { [Autowash.Shell]::SHChangeNotify(0x2000, 0x3005, $link, [IntPtr]::Zero) }  # UPDATEITEM, PATHW|FLUSHNOWAIT
+    }
+    [Autowash.Shell]::SHChangeNotify(0x08000000, 0, $null, [IntPtr]::Zero)  # ASSOCCHANGED
+    $ie4uinit = Join-Path $env:WINDIR 'System32\ie4uinit.exe'  # vide le cache d'icônes
+    if (Test-Path -LiteralPath $ie4uinit) { Start-Process -FilePath $ie4uinit -ArgumentList '-show' -WindowStyle Hidden }
+} catch {
+    Write-Log "Icônes non rafraîchies ($_)."
+}
 Write-Log "Mise à jour $Version installée dans $Target."
 if ($Relaunch) { Start-Process -FilePath $exe }
 """
