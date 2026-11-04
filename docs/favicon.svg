@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="autowash-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#autowash-bg)"/>
+  <g id="glyph" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Goutte -->
+    <path d="M29 10C29 10 15 25 15 36.5a14 14 0 0 0 28 0C43 25 29 10 29 10z"/>
+    <!-- Coche : PC en bonne santé -->
+    <path d="M22.5 37.5l4.5 4.5 8.5-8.5"/>
+    <!-- Étincelle : propre -->
+    <path d="M47 9Q48 15 54 16Q48 17 47 23Q46 17 40 16Q46 15 47 9z" fill="#fff" fill-opacity=".55" stroke="none" stroke-linejoin="miter"/>
+  </g>
+</svg>
