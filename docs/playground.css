@@ -5,9 +5,14 @@
   (kit/sync.sh la met à jour) pour marcher hors ligne : modifier ici, pas dans les copies.
 
   Règles du kit :
-  - chaque page garde sa police (une seule) et ses couleurs, en redéfinissant
-    --pg-accent / --pg-accent-2 (et si besoin --pg-bg, --pg-surface…) après ce fichier ;
-  - la deuxième police est toujours JetBrains Mono (--pg-mono) : bandeau, kickers, puces ;
+  - deux polices pour tout le playground, pas une de plus : Bricolage Grotesque (--pg-font)
+    pour le texte et les titres, JetBrains Mono (--pg-mono) pour le bandeau, les kickers,
+    les puces et le code. Chaque page les charge avec ce lien :
+    https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=JetBrains+Mono:wght@400;500;600&display=swap
+  - chaque page a ses couleurs, celles du dégradé de son icône : --pg-accent / --pg-accent-2
+    (le dégradé des boutons), plus des neutres teintés (--pg-bg, --pg-surface…) redéfinis
+    après ce fichier. Pas d'autre couleur décorative ; une couleur d'état seulement si elle
+    porte un sens (erreur, incompatible) ;
   - clair / sombre suit le système, rien à faire de plus.
 
   Bandeau de retour, en tête de <body> :
@@ -46,6 +51,7 @@
   --pg-radius: 16px;
   --pg-radius-sm: 12px;
   --pg-max: 1120px;
+  --pg-font: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
   --pg-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
 
@@ -76,6 +82,7 @@
   background-image: radial-gradient(var(--pg-dot) 1px, transparent 1px);
   background-size: 22px 22px;
   color: var(--pg-text);
+  font-family: var(--pg-font);
   line-height: 1.6;
   overflow-x: clip;
   -webkit-font-smoothing: antialiased;

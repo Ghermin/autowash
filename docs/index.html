@@ -18,28 +18,26 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="playground.css">
 <style>
   :root {
     --pg-bg: #f6f8fb; --pg-surface: #ffffff; --pg-surface-2: #eef2f7; --pg-text: #0f172a; --pg-muted: #526077;
     --pg-line: #dfe5ee; --pg-dot: rgba(15, 23, 42, .08);
-    --pg-accent: #2563eb; --pg-accent-2: #06b6d4;
-    --green: #16a34a; --amber: #d97706;
+    --pg-accent: #1d4ed8; --pg-accent-2: #0ea5e9;
     --shot-shadow: 0 24px 60px -24px rgba(15, 23, 42, .28);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --pg-bg: #0d1117; --pg-surface: #161b22; --pg-surface-2: #1c232d; --pg-text: #e8edf4; --pg-muted: #9aa6b8;
       --pg-line: #2a323d; --pg-dot: rgba(232, 237, 244, .06);
-      --pg-accent: #4f8cff; --pg-accent-2: #22d3ee; --pg-on-accent: #ffffff;
-      --green: #3fb950; --amber: #f0a429;
+      --pg-accent: #5b8cff; --pg-accent-2: #38bdf8; --pg-on-accent: #ffffff;
       --shot-shadow: 0 24px 60px -20px rgba(0, 0, 0, .7);
     }
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body { font-family: "Plus Jakarta Sans", system-ui, sans-serif; font-size: 16.5px; }
+  body { font-size: 16.5px; }
   a { color: var(--pg-accent); }
 
   .pg-hero { position: relative; }
@@ -71,14 +69,10 @@
   .safety .pg-card { display: flex; gap: 16px; }
   .icon {
     width: 44px; height: 44px; border-radius: var(--pg-radius-sm); flex: none; display: grid; place-items: center;
-    background: color-mix(in srgb, var(--green) 14%, transparent); color: var(--green);
+    background: color-mix(in srgb, var(--pg-accent-2) 14%, transparent); color: var(--pg-accent);
   }
   .icon svg { width: 22px; height: 22px; }
 
-  .pg-note.warn {
-    background: color-mix(in srgb, var(--amber) 9%, var(--pg-surface));
-    border-color: color-mix(in srgb, var(--amber) 35%, var(--pg-line));
-  }
   .update { margin-top: 16px; }
   .update h3 { display: flex; align-items: center; gap: 10px; }
 
