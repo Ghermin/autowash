@@ -10,10 +10,10 @@ function Invoke-Step([string]$what, [scriptblock]$command) {
     if ($LASTEXITCODE -ne 0) { throw "Échec : $what (code $LASTEXITCODE)" }
 }
 
-Invoke-Step 'dépendances' { python -m pip install --quiet --no-warn-script-location -r requirements.txt pyinstaller==6.22.3 pillow }
+Invoke-Step 'dépendances' { python -m pip install --quiet --no-warn-script-location -r requirements.txt pyinstaller==6.22.3 }
 Invoke-Step 'PyInstaller' {
     python -m PyInstaller --noconfirm --clean --windowed --log-level WARN --name Autowash `
-        --icon assets\autowash.ico --add-data "assets;assets" --collect-data customtkinter main.py
+        --icon assets\autowash.ico --add-data "assets;assets" --collect-data customtkinter --exclude-module PIL main.py
 }
 "Construit : $PSScriptRoot\dist\Autowash\Autowash.exe"
 if ($NoInstall) { return }

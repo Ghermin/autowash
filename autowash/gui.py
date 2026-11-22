@@ -10,8 +10,9 @@ from pathlib import Path
 from tkinter import messagebox, ttk
 from typing import Callable
 
+import warnings
+
 import customtkinter as ctk
-from PIL import Image
 
 from . import MODULES, __version__, journal, programs, restore, selfupdate
 from .models import Action, Finding, Severity, score
@@ -19,8 +20,16 @@ from .system import human_size, is_admin, launch, relaunch_as_admin
 
 ASSETS = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent.parent)) / "assets"
 ICON = ASSETS / "autowash.ico"
-LOGO = ASSETS / "autowash.png"
+LOGO_SIZES = (34, 42, 51, 68)  # assets/logo-<taille>.png (zoom 100, 125, 150, 200 %), générés par le playground
 PLAYGROUND = "https://ghermin.github.io/"
+
+
+def _logo(widget: tk.Misc) -> tk.PhotoImage | None:
+    """Le logo de 34 px à la taille du zoom Windows, lu directement par Tk (sans Pillow)."""
+    wanted = 34 * ctk.ScalingTracker.get_widget_scaling(widget)
+    size = min(LOGO_SIZES, key=lambda s: abs(s - wanted))
+    path = ASSETS / f"logo-{size}.png"
+    return tk.PhotoImage(file=str(path)) if path.exists() else None
 
 ctk.set_appearance_mode("system")
 ctk.set_default_color_theme("blue")
@@ -104,9 +113,11 @@ class App(ctk.CTk):
         bar = self.sidebar = ctk.CTkFrame(self, width=230, corner_radius=0)
         bar.grid(row=0, column=0, rowspan=2, sticky="nsw")
         bar.pack_propagate(False)
-        logo = ctk.CTkImage(Image.open(LOGO), size=(34, 34)) if LOGO.exists() else None
-        ctk.CTkLabel(bar, text="  Autowash" if logo else "Autowash", image=logo, compound="left",
-                     font=_font(24, True)).pack(padx=18, pady=(24, 0), anchor="w")
+        logo = self._logo_image = _logo(bar)  # garder une référence, sinon Tk efface l'image
+        with warnings.catch_warnings():  # l'avertissement « pas un CTkImage » : la taille est déjà choisie par _logo
+            warnings.simplefilter("ignore")
+            ctk.CTkLabel(bar, text="  Autowash" if logo else "Autowash", image=logo, compound="left",
+                         font=_font(24, True)).pack(padx=18, pady=(24, 0), anchor="w")
         ctk.CTkLabel(bar, text=f"Sécurité et santé du PC · v{__version__}",
                      text_color=MUTED).pack(padx=22, pady=(0, 18), anchor="w")
         self.nav: dict[str, ctk.CTkButton] = {}
